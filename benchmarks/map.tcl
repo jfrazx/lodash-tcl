@@ -1,6 +1,6 @@
 set auto_path [concat [file join [file dirname [info script]] ".."] $auto_path]
 
-package require underscore
+package require lodash
 
 set numbers [list]
 for {set i 0} {$i < 100} { incr i } { lappend numbers $i }

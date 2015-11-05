@@ -1,1 +1,1 @@
-package ifneeded underscore 0.1 "source $dir/lib/underscore.tcl"
+package ifneeded lodash 0.5 "source $dir/lib/lodash.tcl"
