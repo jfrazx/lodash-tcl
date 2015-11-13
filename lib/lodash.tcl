@@ -9,7 +9,7 @@
 # This package provides a collection of different utility methods that try to
 # bring functional programming aspects known from other programming languages,
 # like Ruby or JavaScript, to Tcl.
-package provide lodash 0.5
+package provide lodash 0.7
 
 namespace eval ::_ {
 
@@ -45,7 +45,7 @@ namespace eval ::_ {
 # definitions, while still giving the block access to surrounding variables
 # using upvar.
 #
-# @example Calculating the first n Fibonnacci numbers
+# @example Calculating the first n Fibonacci numbers
 #   proc fib_up_to { max block } {
 #       set i1 [set i2 1]
 #
@@ -58,7 +58,7 @@ namespace eval ::_ {
 #   }
 #
 #   fib_up_to 50 {{n} { puts $n }}
-#   => prints the fibonnaci sequence up to 50
+#   => prints the Fibonacci sequence up to 50
 #
 # @example Automatic resource cleanup
 #   # Guarantees that the file descriptor is closed,
@@ -183,13 +183,13 @@ proc _::eachIndex { list iterator } {
 # @param [integer] number: The size grouping
 # @param [block] iterator: The block to invoke per iteration
 # @return [list] -- The original list
-proc _::eachSlice { list number iterator } {
-  if { $number < 1 } {
-    return -code error "Invalid slice size"
+proc _::eachSlice { list size iterator } {
+  if { $size < 1 } {
+    return -code error "slice size must be equal to or greater than 1"
   }
 
-  for { set i 0 } { $i < [llength $list] } { incr i $number } {
-    _::yield $iterator [lrange $list $i [expr { $i+$number-1 }]]
+  for { set i 0 } { $i < [llength $list] } { incr i $size } {
+    _::yield $iterator [lrange $list $i [expr { $i+$size-1 }]]
   }
   return $list
 }
@@ -218,7 +218,7 @@ proc _::chunk { list { size 1 } } {
   return $result
 }
 
-# push an element onto the end of a list
+# Pushes an element onto the end of a list
 #
 # @note
 #   This method mutates list
@@ -230,10 +230,11 @@ proc _::chunk { list { size 1 } } {
 #   => 1 2 3 4 5 6
 # @param [list] list: the list to add an element
 # @param [any] element: the element to add
-# @return [void]
+# @return [list]
 proc _::push { list element } {
   upvar 1 $list l
   set l [linsert $l end $element]
+  return $l
 }
 
 # remove an element from the end of a list and return it
@@ -289,10 +290,11 @@ proc _::shift { list { count 1 } } {
 #
 # @param [list] list: the list in which to add
 # @param [any] element: the element to add
-# @return [void]
+# @return [list]
 proc _::unshift { list element } {
   upvar 1 $list l
   set l [linsert $l 0 $element]
+  return $l
 }
 
 # Returns a new list of values by applying the given block to each
@@ -303,8 +305,7 @@ proc _::unshift { list element } {
 #   _::map [list 2 4 6 8] {{ n }
 #     {
 #     upvar index index
-#     incr index
-#     expr { $n * $index }
+#     expr { $n * [incr index] }
 #   }}
 #   => 0 4 12 24
 #
@@ -342,7 +343,7 @@ proc _::map { list iterator } {
 # @return [list] -- the shuffled list
 proc _::shuffle { list } {
   for { set i 0 } { $i < [llength $list] } { incr i } {
-		set random_index [expr { int(rand() * [expr { $i + 1 }] ) } ]
+    set random_index [expr { int(rand() * [expr { $i + 1 }] ) } ]
 
   	if { $i == $random_index } { continue }
 
@@ -350,7 +351,7 @@ proc _::shuffle { list } {
     set list [lreplace $list $i $i [lindex $list $random_index]]
     set list [lreplace $list $random_index $random_index $x]
   }
-	return $list
+  return $list
 }
 
 # Determines if the passed value is empty and alone
@@ -358,7 +359,7 @@ proc _::shuffle { list } {
 # @param [any] value: The value to check for emptiness
 # @return [boolean]
 proc _::empty { value } {
-  expr { ![llength [string trim $value]] }
+  expr { [llength [string trim $value]] ? false : true }
 }
 
 # Reduces list to a value which is the accumulated result of running
@@ -368,24 +369,23 @@ proc _::empty { value } {
 #
 # @param [list] list: the list of values to reduce
 # @param [proc] iterator: the means of reduction
-# @param [any] args: memo starting value
+# @param [any] memo: initial starting value
 # @return [any] -- reduced value
-proc _::reduce { list iterator args } {
-  if { [llength $args] > 1 } {
-    return -code error "Wrong # of args: should be _::reduce list iterator ?accumulator?"
-  }
+proc _::reduce { list iterator { memo undefined } } {
+  if { $memo == "undefined" && ![llength $list] } {
 
-  if { [llength $args] == 1 } {
-    set memo [lindex $args 0]
-  } elseif { [llength $list] == 0 } {
     return -code error "Reduce of empty list with no initial value"
-  } else {
+
+  } elseif { $memo == "undefined" } {
+
     set list [lassign $list memo]
+
   }
 
   foreach item $list {
     set memo [_::yield $iterator $memo $item]
   }
+
   return $memo
 }
 
@@ -394,38 +394,37 @@ proc _::reduce { list iterator args } {
 #
 # @param [list] list: the list of values to reduce
 # @param [proc] iterator: the means of reduction
-# @param [any] args: memo starting value
+# @param [any] memo: initial starting value
 # @return [any] -- reduced value
-proc _::reduceRight { list iterator args } {
-  if { [llength $args] > 1 } {
-    return -code error "Wrong # of args: should be _::reduceRight list iterator ?initial?"
-  }
+proc _::reduceRight { list iterator { memo undefined } } {
+  set list [lreverse $list]
 
-  if { [llength $args] == 1 } {
-    set memo [lindex $args 0]
-  } elseif { [llength $list] == 0 } {
+  if { $memo == "undefined" && ![llength $list] } {
+
     return -code error "Reduce of empty list with no initial value"
-  } else {
-    set memo [lindex $list "end"]
-    set list [lreplace $list [set list "end"] "end"]
+
+  } elseif { $memo == "undefined" } {
+
+    set list [lassign $list memo]
+
   }
 
-  set length [llength $list]
-  while { $length > 0 } {
-    incr length -1
-    set memo [_::yield $iterator $memo [lindex $list $length]]
+  foreach item $list {
+    set memo [_::yield $iterator $memo $item]
   }
 
   return $memo
 }
 
-# Accepts and list and returns a list with all 'falsy' values removed
+# Accepts a list and returns a new list with all 'falsey' values removed
+# If the 'strict' option is true all normal Tcl boolean values are considered,
+# which include 'f' and 'of' as false, else only "", 0 and false will be removed.
 #
 # @example
 #   set l [list the {} 0 1 of [list] " " false true "string"]
 #   _::compact $l true
 #   => the 1 true string
-# @param [list]: The list in which to remove falsy values
+# @param [list]: The list in which to remove falsey values
 # @param [boolean] strict: Optionally enable strict boolean checking
 # @return [list]
 proc _::compact { list { strict false } } {
@@ -459,10 +458,10 @@ proc _::compact { list { strict false } } {
 # @return [boolean]
 proc _::isBoolean { value { strict false } } {
   if { $strict } {
-    return [string is boolean -strict $value]
+    return [expr { [string is boolean -strict $value] ? true : false } ]
   }
 
-  regexp -nocase (^true|false|0|1$) $value
+  expr { [regexp -nocase -- (^true|false|0|1$) $value] ? true : false }
 }
 
 # Fills elements of list with value from start, up to, but not including, stop.
@@ -491,7 +490,10 @@ proc _::fill { list value { start 0 } { stop -1 } } {
   return $list
 }
 
-# split list into additional lists based on iterator
+# Creates a list of elements split into two groups,
+# the first of which contains elements iterator returns truthy for,
+# while the second of which contains elements iterator returns falsey for.
+#
 # @param [list] list: the list to split
 # @param [proc] iterator: determines list splitting
 # @return [[list][list]]
@@ -510,10 +512,10 @@ proc _::partition { list iterator } {
 }
 
 # Executes the passed iterator with each element of the passed list.
-# Returns true if the passed block never returns a 'falsy' value.
+# Returns true if the passed block never returns a 'falsey' value.
 #
 # When no explicit iterator is passed, 'all' will return true
-# if none of the list elements is a falsy value.
+# if none of the list elements is a falsey value.
 proc _::all { list { iterator { { x } { return $x } } } } {
   foreach e $list {
     if { [string is false [_::yield $iterator $e]] } {
@@ -526,10 +528,10 @@ proc _::all { list { iterator { { x } { return $x } } } } {
 
 # Executes the passed iterator with each element of the passed list.
 # Returns true if the passed block returns at least one value that
-# is not 'falsy'.
+# is not 'falsey'.
 #
-# When no explicit iterator is passed, any? will return true
-# if at least one of the list elements is not a falsy value.
+# When no explicit iterator is passed, `_::any` will return true
+# if at least one of the list elements is not a falsey value.
 proc _::any { list {iterator {{ x } { return $x }}} } {
   foreach e $list {
     if { [expr { ![string is false [_::yield $iterator $e]] }] } {
@@ -764,20 +766,19 @@ proc _::take { list { n 1 } } {
 # @param [integer] n: The number of elements to take
 # @return [list]  -- the sliced elements
 proc _::takeRight { list { n 1 } } {
-  set stop 0
   if { !$n || ![llength $list] } {
     return [list]
   } elseif { $n < 0 } {
-    set number [expr { abs($n) }]
+    set n [expr { abs($n) }]
   } else {
-    set number [expr { [llength $list] -$n }]
+    set n [expr { [llength $list] -$n }]
   }
 
   return [baseSlice $list $n]
 }
 
 # Creates a slice of list with elements taken from the beginning.
-# Elements are taken until predicate returns falsy,
+# Elements are taken until predicate returns falsey,
 # or until the list runs out of elements
 #
 # @example
@@ -786,16 +787,19 @@ proc _::takeRight { list { n 1 } } {
 #
 # @param [list] list: The list to take from
 # @param [block] iterator: The block invoked per iteration
+# @param [boolean] reverse: Optionally reverse the order in which the list is iterated
 # @return [list]  -- the sliced list
-proc _::takeWhile { list iterator } {
+proc _::takeWhile { list iterator { reverse false } } {
   set result [list]
+
+  if { $reverse } { set list [lreverse $list] }
 
   foreach item $list {
     if { ![_::yield $iterator $item] } {
       break
     }
 
-    _::push result $item
+    expr { $reverse ? [_::unshift result $item] : [_::push result $item] }
   }
 
   return $result
@@ -1099,7 +1103,12 @@ proc _::findMap { list locate injection { start 0 } { after false }} {
     set start 0
   }
 
-  if { ![_::empty [set index [_::findIndex $list $locate $start] ] ] } {
+  if { ~[set index [_::findIndex $list {
+    { element } {
+      upvar 1 locate locate
+      expr { $element == $locate }
+    }
+  } $start] ] } {
     if { $after } {
       incr index
     }
@@ -1120,21 +1129,15 @@ proc _::findMap { list locate injection { start 0 } { after false }} {
 #   set oldest
 #   => name Jessie age 17
 #
-# @param list [list]
-# @param ?iterator? [lambda]
-# @return Item from list
-proc _::max { list args } {
-  if { [llength $list] == 0} {
-    return -code error "Cannot get the max of an empty list"
+# @param [list] list
+# @param [lambda] iterator
+# @return [any]  -- The maximum computed from iterator
+proc _::max { list { iterator undefined } } {
+  if { ![llength $list] } {
+    return -code error "cannot get the max of an empty list"
   }
 
-  if { [llength $args] > 1 } {
-    return -code error "Wrong # of args: should be _::max list ?iterator?"
-  }
-
-  if { [llength $args] == 1 } {
-    set iterator [lindex $args 0]
-  }  else {
+  if { $iterator == "undefined" } {
     set iterator {{ item } { return $item }}
   }
 
@@ -1159,21 +1162,15 @@ proc _::max { list args } {
 #   set smallest [_::min $numbers]
 #   set smallest; # => 2
 #
-# @param list [list]
-# @param ?iterator? [lambda]
-# @return Item from list
-proc _::min { list args } {
-  if { [llength $list] == 0 } {
-    return -code error "Cannot get the min of an empty list"
+# @param [list] list
+# @param [lambda] iterator
+# @return [any]  -- The minimium computed from iterator
+proc _::min { list { iterator undefined } } {
+  if { ![llength $list] } {
+    return -code error "cannot get the min of an empty list"
   }
 
-  if { [llength $args] > 1 } {
-    return -code error "Wrong # of args: should be _::min list ?iterator?"
-  }
-
-  if { [llength $args] == 1 } {
-    set iterator [lindex $args 0]
-  }  else {
+  if { $iterator == "undefined" } {
     set iterator {{ item } { return $item }}
   }
 
@@ -1255,7 +1252,7 @@ proc _::unzip { list } {
 proc _::pluck { collection key } {
   set result [list]
 
-  foreach d $list {
+  foreach d $collection {
     if { [dict exists $d $key] } {
       _::push result [dict get $d $key]
     }
@@ -1354,23 +1351,23 @@ proc baseFlatten { list { deep false } { result {} } } {
 #
 # @example
 #   _::hasDepth 3
-#   => 0
+#   => false
 #   _::hasDepth { 1 2 3 }
-#   => 0
+#   => false
 #   _::hasDepth { 1 { 2 { 3 } } }
-#   => 1
+#   => true
 #
 # @param [any] value: The value to check for nested lists
 # @return [boolean]
 proc _::hasDepth { value } {
-  expr { [string trim $value] != [baseFlatten [string trim $value] false] }
+  expr { [string trim $value] == [baseFlatten [string trim $value] false] ? false : true }
 }
 
 # Determine the depth of a list
 #
 # @example
 #   _::depth 10
-#   => 0 
+#   => 0
 #   _::depth { 0 1 2 }
 #   => 0
 #   _::depth { 0 0 { 1 1 { 2 2 { 3 3 { 4 4 { 5 5 } } } } } }
@@ -1395,18 +1392,53 @@ proc _::depth { list } {
 #
 # @example
 #   _::inRange 7 5 10
-#   => 1
+#   => true
 #   _::inRange 0.4 -1 -4.3
-#   => 0
+#   => false
 #
 # @param [integer] number: The number to check
 # @param [integer] start: starting range
 # @param [integer] stop: stopping range
-proc _::inRange { number { start 0 } { stop {} } } {
-  if { [_::empty $stop] } {
+# @return [boolean]
+proc _::inRange { number { start 0 } { stop undefined } } {
+  if { $stop == "undefined" } {
     set stop $start
     set start 0
   }
 
-  expr { $number >= [_::min [list $start $stop]] && $number < [_::max [list $start $stop]] }
+  expr { $number >= [_::min [list $start $stop]] && $number < [_::max [list $start $stop]] ? true : false }
+}
+
+# Determine if the string starts with chars
+#
+# @example
+#   _::startsWith "testing testing" "cat"
+#   => false
+#
+#   _::startsWith "testing testing" "te"
+#   => true
+#
+# @param [string] string: The string to match
+# @param [string] chars: The characters for matching
+# @return [boolean]
+proc _::startsWith { string chars } {
+  expr { [string match ${chars}* $string] ? true : false }
+}
+
+# Determine if the string ends with chars
+#
+# @param [string] string: The string to match
+# @param [string] chars: The characters for matching
+# @return [boolean]
+proc _::endsWith { string chars } {
+  expr { [string match *${chars} $string] ? true : false }
+}
+
+# Determine if the string contains chars
+#
+# @param [string] string: The string to search
+# @param [string] string: The characters for matching
+# @return [boolean]
+proc _::contains { string chars } {
+  expr { [string match *${chars}* $string] ? true : false }
 }
