@@ -21,8 +21,9 @@ Yielding the code in an anonymous proc prevents the leakage of variable
 definitions, while still giving the block access to surrounding variables  
 using upvar.  
 
-Calculating the first n Fibonacci numbers  
- ```
+Calculating the first n Fibonacci numbers
+
+ ```tcl
  proc fib_up_to { max block } {
    set i1 [set i2 1]
 
@@ -44,7 +45,7 @@ Calculating the first n Fibonacci numbers
 Iterates over the passed list, yielding each element in turn to the  
 passed iterator. Returns the passed list.
 
-```
+```tcl
 set list [list 1 2 3]
 
 _::each $list {
@@ -63,7 +64,7 @@ _::each $list {
 Iterates over the passed list, yielding each element and its index in turn  
 to the passed iterator. Returns the passed list.
 
-```
+```tcl
 set list [list 1 2 3]
 _::eachIndex $list {
   { element index } {
@@ -83,7 +84,7 @@ value of the given list.
 
 Alias: `_::collect`
 
-```
+```tcl
 set index -1
 _::map [list 2 4 6 8] {
   { n } {
@@ -100,7 +101,7 @@ _::map [list 2 4 6 8] {
 Creates a list of elements split into groups the length of size.  
 If collection can’t be split evenly, the final chunk will be the remaining elements.  
 
-```
+```tcl
 _::chunk [list 1 2 3 4 5 56 6 7 8 9] 2
 => {1 2} {3 4} {5 56} {6 7} {8 9}
 ```
@@ -111,7 +112,7 @@ _::chunk [list 1 2 3 4 5 56 6 7 8 9] 2
 Pushes an element onto the end of a list, returning the list.   
 Mutates list.
 
-```
+```tcl
 set li [list 1 2 3 4 5]
 _::push li 6
 set li
@@ -124,7 +125,7 @@ set li
 Remove 'count' elements from the end of a list, returning them.  
 Mutates list.  
 
-```
+```tcl
 set li [list 1 2 3 4 5]
 _::pop li
 => 5
@@ -136,7 +137,7 @@ _::pop li
 Remove 'count' elements from the beginning of a list, returning them.   
 Mutates list.   
 
-```
+``` tcl
 set li [list 1 2 3 4 5]
 _::shift li
 => 1
@@ -150,7 +151,7 @@ set li
 Add an element to the beginning of a list, returning the list.  
 Mutates list.  
 
-```
+``` tcl
 set li [list 1 2 3 4 5]
 _::unshift li 0
 set li
@@ -162,7 +163,7 @@ set li
 
 Determines if the passed value is empty and alone. Returns a boolean.  
 
-```
+```tcl
 _::empty [list 0 2 4]
 => false
 
@@ -175,7 +176,7 @@ _::empty ""
 
 Randomly shuffles the contents of a list, returns the newly shuffled list.  
 
-```
+```tcl
 set li [list 1 2 3 4 5]
 _::shuffle $li  
 => 5 2 3 4 1
@@ -191,7 +192,7 @@ the first element of collection is used as the initial value.
 
 Alias: `_::foldl`, `_::inject`
 
-```
+```tcl
 set li [list 2 4 6 8 10]
 _::reduce $li {
   { total n } {
@@ -209,7 +210,7 @@ elements of list from right to left.
 
 Alias: `_::foldr`  
 
-```
+```tcl
 set li [list 2 5 10 200]
 _::reduceRight $li {
   { total n } {
@@ -226,7 +227,7 @@ Accepts a list and returns a new list with all 'falsey' values removed.
 If the 'strict' option is true all normal Tcl boolean values are considered,  
 which include 'f' and 'of' as false, among others, else only "", 0 and false will be removed.
 
-```
+```tcl
 set li [list the {} 0 1 of [list] " " false true "string"]
 _::compact $li true
 => the 1 true string
@@ -239,7 +240,7 @@ Checks if the value passed is a boolean value
 Optionally enable strict mode. If strict mode is false (default)    
 only true, false, 1 and 0 are considered boolean values (case insensitive)   
 
-```
+```tcl
 _::isBoolean true
 => true
 
@@ -255,7 +256,7 @@ _::isBoolean f true
 
 Fills elements of list with value from start, up to, but not including, stop.   
 
-```
+```tcl
 set li [list 4 6 8]
 _::fill $li * 1 2
 => [4 * 8]
@@ -265,13 +266,13 @@ _::fill $li * 2 6
 ```
 
 #### partition
-`_::partition list iterator`  
+`_::partition list iterator`
 
 Creates a list of elements split into two groups,   
 the first of which contains elements iterator returns truthy for,   
 while the second of which contains elements iterator returns falsey for.   
 
-```
+```tcl
 set li [list 1 2 3 4 5 6]
 _::partition $li {
   { element } {
@@ -292,7 +293,7 @@ if none of the list elements is a falsey value.
 
 Alias: `_::every`  
 
-```
+```tcl
 set li [list 2 4 6 8 10]
 _::all $li {
   { element } {
@@ -314,7 +315,7 @@ if at least one of the list elements is not a falsey value.
 
 Alias: `_::some`  
 
-```
+```tcl
 set li [list 6 7 8 9 10]
 _::any $li {
   { element } {
@@ -331,7 +332,7 @@ Returns the first element of a list.
 
 Alias: `_::head`
 
-```
+```tcl
 _::first [list 99 98 97 96]
 => 99
 ```
@@ -341,7 +342,7 @@ _::first [list 99 98 97 96]
 
 Returns the last element of a list.   
 
-```
+```tcl
 _::last [list 99 98 97 96]
 => 96
 ```
@@ -351,7 +352,7 @@ _::last [list 99 98 97 96]
 
 Returns all but the last element of the passed list.  
 
-```
+```tcl
 _::initial [list 2 4 6 8 10]
 => 2 4 6 8
 ```
@@ -363,7 +364,7 @@ Creates a slice of list with all elements except the first.
 
 Alias: `_::tail`
 
-```
+```tcl
 _::rest [list 2 4 6 8 10]
 => 4 6 8 10
 ```
@@ -373,7 +374,7 @@ _::rest [list 2 4 6 8 10]
 
 Creates a slice of list with n elements dropped from the beginning.   
 
-```
+```tcl
 set li [list 1 2 3 4 5]  
 _::drop $li
 => 2 3 4 5
@@ -387,7 +388,7 @@ _::drop $li 3
 
 Creates a slice of list with n elements dropped from the end.   
 
-```
+```tcl
 set li [list 1 2 3 4 5]  
 _::dropRight $li
 
@@ -401,7 +402,7 @@ _::dropRight $li 2
 
 Creates a slice of list from start up to, but not including, stop.  
 
-```
+```tcl
 set li [list 1 2 3 4 5]
 _::slice $li 1 3
 => 2 3
@@ -414,7 +415,7 @@ The splice method changes the content of a list by removing existing
 elements and/or adding new elements. Returns the removed elements.  
 Mutates list.  
 
-```
+```tcl
 set li { 1 2 3 4 5 6 7 8 9 10 }
 _::splice li 1 2
 => 2 3
@@ -433,7 +434,7 @@ set li
 Retrieve the list index of value if it exists, else return negative one (-1).   
 Optionally set a starting index.   
 
-```
+```tcl
 _::indexOf [list 5 1 4 2 3] 3
 => 4
 ```
@@ -445,7 +446,7 @@ Checks if value is in list, optionally include a starting index
 
 Alias: `_::include`  
 
-```
+```tcl
 _::includes [list 10 20 30 40 50] 20
 => true
 
@@ -458,7 +459,7 @@ _::includes [list 10 20 30 40 50] 20 2
 
 Creates a list of elements corresponding to the given indexes of list.  
 
-```
+```tcl
 set li [list 10 20 30 40 50]
 _::at $li [list 1 4]
 => 20 50
@@ -471,7 +472,7 @@ Returns a sorted copy of list. Sorting is based on the return
 values of the execution of the iterator for each item.  
 Optionally reverse the order of the returned list   
 
-```
+```tcl
 _::sortBy [list testings len of strings sort] {
   { item } {
     string length $item
@@ -485,7 +486,7 @@ _::sortBy [list testings len of strings sort] {
 
 Executes the passed block n times.   
 
-```
+```tcl
 _::times 10 puts
 => prints 0-9
 ```
@@ -495,7 +496,7 @@ _::times 10 puts
 
 Creates a slice of list with n elements taken from the beginning.   
 
-```
+```tcl
 set li [list 1 2 3 4 5]
 _::take $li
 => 1
@@ -509,7 +510,7 @@ _::take $li 3
 
 Creates a slice of list with n elements taken from the end.  
 
-```
+```tcl
 set li [list 1 2 3 4 5]
 _::takeRight $li
 => 5
@@ -526,7 +527,7 @@ Elements are taken until iterator returns falsey,
 or until the list runs out of elements.  
 Optionally reverse the traversal of the list.  
 
-```
+```tcl
 _::takeWhile [list 1 3 10 2 5] {
   { n } {
     expr { $n < 3 }
@@ -551,10 +552,10 @@ the iterator.
 The result is returned as a Tcl dictionary object, with each key corresponding  
 to each distinct value assumed by the iterator over the provided list.   
 
-```
+```tcl
 _::groupBy [list 1.3 2.1 2.4] {
   { num } {
-    expr {floor($num)}
+    expr { floor($num) }
   }
 }
 => 1.0
@@ -572,7 +573,7 @@ Calls the given iterator for each element in the list,
 returning a new list without the elements for which the iterator returned  
 a truthy value.  
 
-```
+```tcl
 _::reject [list 1 5 3 4 2] {
   { n } {
     expr { $n < 3 }
@@ -590,7 +591,7 @@ a truthy value.
 
 Alias: `_::filter`  
 
-```
+```tcl
 _::select [list 1 2 3 4 5] {
   { n } {
     expr { $n < 3 }
@@ -606,7 +607,7 @@ Removes all elements from list that iterator returns
 truthy for and returns an list of the removed elements.  
 Mutates list.
 
-```
+```tcl
 set li [list 1 2 3 4 5]
 _::remove li {
   { n } {
@@ -623,7 +624,7 @@ set li
 
 Creates a list of unique values that are included in all of the provided lists.  
 
-```
+```tcl
 _::intersection [list 1 2] [list 4 2] [list 2 1]
 => 2
 ```
@@ -633,8 +634,8 @@ _::intersection [list 1 2] [list 4 2] [list 2 1]
 
 Creates a list of unique values not included in the other provided lists.    
 
-```
-_::difference [list 1 2] [list 4 2] [list 2 1]
+```tcl
+_::difference [list 1 2] [list 4 2] [list 2 1] [list 7 7]
 => 4
 
 _::difference [list 1 7 2] [list 4 4 2] [list 2 3 1]
@@ -648,7 +649,7 @@ Creates a duplicate-free version of a list.
 
 Alias: `_::unique`  
 
-```
+```tcl
 _::uniq [list 2 1 4 4 2 5]  
 => 2 1 4 5
 ```
@@ -659,7 +660,7 @@ _::uniq [list 2 1 4 4 2 5]
 Merge two or more lists into a single list,  
 duplicate values will remain, if no duplicates are desired use `_::union`  
 
-```
+```tcl
 _::merge { 1 2 3 } { 2 3 4 } { 3 4 5 } { 5 { 6 } 7 }  
 => 1 2 3 2 3 4 3 4 5 5 { 6 } 7
 ```
@@ -670,7 +671,7 @@ _::merge { 1 2 3 } { 2 3 4 } { 3 4 5 } { 5 { 6 } 7 }
 Creates a list of unique values from any number of lists  
 duplicate values are removed  
 
-```
+```tcl
 _::union { 1 2 } { 4 7 } { 7 1 }  
 => 1 2 4 7
 ```
@@ -682,13 +683,24 @@ An implementation of a do while/until loop for Tcl.
 Repeats body while condition is true or until the condition becomes true.  
 Keyword must be 'while' or 'until'.  
 
-```
+```tcl
 set index -1
 set list [list 1 2 3 4 5]
 _::do {
   puts [lindex $list [incr index]]
 } while { $index < [expr { [llength $list]-1 } ] }
 => prints 1-5
+```
+
+#### unless
+`_::unless condition body`
+
+Executes body if the condition tests false.
+
+```tcl
+_::unless { 5 < 3 } {
+  puts "5 is not less than 3"
+}
 ```
 
 #### detect
@@ -699,7 +711,7 @@ which the iterator returned a truthy value.
 
 Alias: `_::find`  
 
-```
+```tcl
 _::detect [list 1 2 3 4 5] {
   { n } {
     expr { $n < 3 }
@@ -714,7 +726,7 @@ _::detect [list 1 2 3 4 5] {
 This method is like `_::find` except that it returns the index of the first  
 element block returns truthy for instead of the element itself.  
 
-```
+```tcl
 _::findIndex [list 98 34 67 23] {
   { n } {
     expr { $n < 50 }
@@ -728,7 +740,7 @@ _::findIndex [list 98 34 67 23] {
 
 Find all indexes matching iterator criteria and return in new list.  
 
-```
+```tcl
 _::findIndexes [list 1 9 2 8 3 7 4 6 5 10] {
   { n } {
     expr { $n < 5 }
@@ -744,7 +756,7 @@ Find the first instance of value and inject injector
 before or after discovered element.  
 Optionally indicate a starting index.  
 
-```
+```tcl
 _::findMap [list 1 2 3 4] 4 5 true
 => 1 2 3 4 5
 
@@ -764,7 +776,7 @@ _::findMap [list 1 4 3 4 7 9 4 2] 4 addme 10
 Returns the largest value in the given list  
 If an iterator function is provided, the result will be used for comparisons  
 
-```
+```tcl
 set cats [list [dict create name "Buffy" age 16] [dict create name "Jessie" age 17] [dict create name "Fluffy" age 8]]
 _::max $cats {
   { cat } {
@@ -783,7 +795,7 @@ _::max [list 15 32 87 24]
 Returns the smallest value in the given list   
 If an iterator function is provided, the result will be used for comparisons   
 
-```
+```tcl
 _::min [list 5 10 39 4 77]
 => 4
 ```
@@ -794,7 +806,7 @@ _::min [list 5 10 39 4 77]
 Zip together multiple lists into a single list,   
 with elements sharing an index joined together.   
 
-```
+```tcl
 _::zip {Llama Cat Camel} {wool fur hair} {1 2 3}
 => {Llama wool 1} {Cat fur 2} {Camel hair 3}
 ```
@@ -803,9 +815,9 @@ _::zip {Llama Cat Camel} {wool fur hair} {1 2 3}
 `_::unzip list`
 
 Reverse the action of `_::zip`, turning a list of lists into   
-a list of lists for each index.   
+a list of lists for each index.
 
-```
+```tcl
 _::unzip {{Llama wool 1} {Cat fur 2} {Camel hair 3}}
 => {Llama Cat Camel} {wool fur hair} {1 2 3}
 ```
@@ -821,21 +833,35 @@ If the key is not actually present in any of the dictionaries, the empty list
 will be returned. Note that this works with arrays as well, if the arrays are  
 placed into the list using 'array get'.  
 
-```
+```tcl
 set stooges [list [dict create name moe age 40] [dict create name larry age 50] [dict create name curly age 60]]
 _::pluck $stooges name
 => moe larry curly
 ```
 
 #### pull
-`_::pull list values`
+`_::pull list args`
 
-Removes all provided values from list and returns the list of found and removed items.  
+Removes all provided arguments from list and returns a list of found and removed items.  
 Mutates list.  
 
-```
+```tcl
 set li [list 1 2 3 4 5]
-_::pull li [list 1 3 5 88 34]
+_::pull li 1 3 5 88 34
+=> 1 3 5
+set li
+=> 2 4
+```
+
+#### pullAll
+`_::pullAll list values`
+
+Removes all provided values from list and returns a list of found and removed items.    
+Mutates list.  
+
+```tcl
+set li [list 1 2 3 4 5]
+_::pullAll li [list 1 3 5 88 34]
 => 1 3 5
 set li
 => 2 4
@@ -847,7 +873,7 @@ set li
 Flattens a nested list. If 'deep' is true the list is recursively flattened,  
 otherwise it’s only flattened a single level.  
 
-```
+```tcl
 _::flatten [list 1 2 { 2 3 { 4 5 { 6 7 }}}]
 => 1 2 2 3 { 4 5 { 6 7 }}
 
@@ -860,9 +886,22 @@ _::flatten [list 1 2 { 2 3 { 4 5 { 6 7 }}}] true
 
 Recursively flattens a nested list.   
 
-```
+```tcl
 _::flattenDeep [list 1 2 3 { 3 4 5 { 43 2 { 2 { 32 4 }}}}]
 => 1 2 3 3 4 5 43 2 2 32 4
+```
+
+#### flattenDepth
+`_::flattenDepth list ?depth`
+
+Flattens a list depth times. Returns a new list. Default depth is 1.      
+
+```tcl
+_::flattenDepth [list 1 2 3 { 3 4 5 { 43 2 { 2 { 32 4 }}}}]
+=> 1 2 3 3 4 5 { 43 2 { 2 { 32 4 }}}
+
+_::flattenDepth [list 1 2 { 2 3 { 4 5 { 6 7 }}}] 2
+=> 1 2 2 3 4 5 { 6 7 }
 ```
 
 #### hasDepth
@@ -870,7 +909,7 @@ _::flattenDeep [list 1 2 3 { 3 4 5 { 43 2 { 2 { 32 4 }}}}]
 
 Determine if passed list has any nested lists.  
 
-```
+```tcl
 _::hasDepth 3
 => false
 
@@ -887,7 +926,7 @@ _::hasDepth { 1 { 2 { 3 } } }
 Determine the depth of the passed list.  
 Be aware that a single list is considered to have NO depth.  
 
-```
+```tcl
 _::depth 10
 => 0
 
@@ -902,8 +941,9 @@ _::depth { 0 0 { 1 1 { 2 2 { 3 3 { 4 4 { 5 5 } } } } } }
 `_::inRange number ?start ?stop`
 
 Determine if number is within range, up to, but not including stop.  
+Default range is 0 <= number < 1   
 
-```
+```tcl
 _::inRange 7 5 10
 => true
 
@@ -916,7 +956,7 @@ _::inRange 0.4 -1 -4.3
 
 Determine if the passed string starts with chars.  
 
-```
+```tcl
 _::startsWith "testing testing" "cat"
 => false
 
@@ -929,7 +969,7 @@ _::startsWith "testing testing" "te"
 
 Determine if the passed string ends with chars.  
 
-```
+```tcl
 _::endsWith "testing testcat" "cat"
 => true
 
@@ -942,7 +982,7 @@ _::endsWith "catesting testing" "cat"
 
 Determine if the passed string contains chars.  
 
-```
+```tcl
 _::contains "test cat test" "cat"
 => true
 
