@@ -9,7 +9,7 @@
 # This package provides a collection of different utility methods that try to
 # bring functional programming aspects known from other programming languages,
 # like Ruby or JavaScript, to Tcl.
-package provide lodash 0.7
+package provide lodash 0.9
 
 namespace eval ::_ {
 
@@ -214,9 +214,9 @@ proc _::eachSlice { list size iterator } {
 
   set length [llength $list]
 
-  for { set i 0 } { $i < $length } { incr i $size } {
+  for { set index 0 } { $index < $length } { incr index $size } {
 
-    _::yield $iterator [lrange $list $i [expr { $i + $size - 1 }]]
+    _::yield $iterator [lrange $list $index [expr { $index + $size - 1 }]]
   }
   return $list
 }
@@ -276,10 +276,10 @@ proc _::push { list element } {
 # @param [integer] count: optional number of arguments to remove
 # @return [any]  -- the removed element
 proc _::pop { list { count 1 } } {
-  upvar 1 $list l
+  upvar 1 $list array
 
-  set result [lrange $l end-[incr count -1] end]
-  set l [lreplace $l end-$count [set l end]]
+  set result [lrange $array end-[incr count -1] end]
+  set array [lreplace $array end-$count [set array end]]
 
   return $result
 }
@@ -299,10 +299,10 @@ proc _::pop { list { count 1 } } {
 # @param [integer] count: optional number of arguments to remove
 # @return [any]  -- the removed element
 proc _::shift { list { count 1 } } {
-  upvar 1 $list l
+  upvar 1 $list array
 
-  set result [lrange $l 0 [incr count -1]]
-  set l [lreplace $l [set l 0] $count]
+  set result [lrange $array 0 [incr count -1]]
+  set array [lreplace $array [set array 0] $count]
 
   return $result
 }
@@ -322,9 +322,9 @@ proc _::shift { list { count 1 } } {
 # @param [any] element: the element to add
 # @return [list]
 proc _::unshift { list element } {
-  upvar 1 $list l
+  upvar 1 $list array
 
-  return [set l [linsert $l [set l 0] $element]]
+  return [set array [linsert $array [set array 0] $element]]
 }
 
 # Returns a new list of values by applying the given block to each
@@ -379,10 +379,10 @@ proc _::map { list iterator } {
 proc _::shuffle { list } {
   set length [llength $list]
 
-  for { set index 0 } { $index < $length } { incr i } {
+  for { set index 0 } { $index < $length } { incr index } {
     set random_index [expr { int(rand() * [expr { $index + 1 }] ) } ]
 
-  	if { $index == $random_index } { continue }
+    if { $index == $random_index } { continue }
 
     set item [lindex $list $index]
     set list [lreplace $list $index $index [lindex $list $random_index]]
@@ -471,8 +471,8 @@ proc _::reduceRight { list iterator { memo undefined } } {
     set memo [_::pop list]
   }
 
-  for { set idx [expr { [llength $list] - 1 }] } { $idx >= 0 } { incr idx -1 } {
-    set memo [_::yield $iterator $memo [lindex $list $idx]]
+  for { set index [expr { [llength $list] - 1 }] } { $index >= 0 } { incr index -1 } {
+    set memo [_::yield $iterator $memo [lindex $list $index]]
   }
 
   return $memo
@@ -549,9 +549,9 @@ proc _::fill { list value { start 0 } { stop 0 } } {
   set start [_::max [list $start 0]]
   set length [llength $list]
 
-  for { set i $start } { $i < $stop } { incr i } {
-    if { $i < $length } {
-      set list [lreplace $list [set list $i] $i $value]
+  for { set index $start } { $index < $stop } { incr index } {
+    if { $index < $length } {
+      set list [lreplace $list [set list $index] $index $value]
     } else {
       lappend list $value
     }
@@ -611,8 +611,8 @@ proc _::partition { list iterator } {
 # @param [proc] iterator: the iteratee to determine truthiness
 # @return [boolean]
 proc _::all { list { iterator { { item } { return $item } } } } {
-  foreach e $list {
-    if { [string is false [_::yield $iterator $e]] } {
+  foreach item $list {
+    if { [string is false [_::yield $iterator $item]] } {
 
       return false
     }
@@ -640,7 +640,7 @@ proc _::all { list { iterator { { item } { return $item } } } } {
 # @param [list] list: the list to check for a truthy item
 # @param [proc] iterator: the iteratee to determine truthiness
 # @return [boolean]
-proc _::any { list {iterator {{ item } { return $item }}} } {
+proc _::any { list {iterator { { item } { return $item } } } } {
   foreach item $list {
     if { ![string is false [_::yield $iterator $item]] } {
 
@@ -754,9 +754,10 @@ proc _::slice { list { start 0 } { stop 0 } } {
 # @param [any] args: Optional arguments to replace removed elements
 # @return [list]  -- The list of removed elements
 proc _::splice { list start { count -1 } args } {
-  upvar 1 $list l
+  upvar 1 $list array
 
-  if { $start >= [llength $l] } {
+  if { $start >= [llength $array] || ![llength $array] } {
+    set array $args
 
     return [list]
   }
@@ -764,27 +765,24 @@ proc _::splice { list start { count -1 } args } {
   if { ![string is integer $count] } {
 
     _::unshift args $count
-    set count [expr { [llength $l] - 1 } ]
-# } elseif { ![_::inRange $count 0 [llength $l]] } {
-  } elseif { $count < 0 || $count > [llength $l] } {
+    set count [expr { [llength $array] - 1 } ]
+  } elseif { ![_::inRange $count 0 [llength $array]] } {
 
-    set count [expr { [llength $l] - 1 } ]
+    set count [expr { [llength $array] - 1 } ]
 
   } else {
 
     set count [expr { $start + $count - 1 } ]
-
   }
 
-  set result [lrange $l $start $count]
-  set l [lreplace $l $start $count {*}$args]
+  set result [lrange $array $start $count]
+  set array [lreplace $array $start $count {*}$args]
 
   return $result
 }
 
 # This internal method provides the functionality for slice, drop(Right), first, rest, last, initial, etc...
 proc baseSlice { list { start 0 } { stop 0 } } {
-  set index -1
   set length [llength $list]
 
   if { $start < 0 } {
@@ -852,9 +850,7 @@ proc _::indexOf { list value { index 0 } } {
     set index [expr { [llength $list] + $index } ]
   }
 
-  set length [llength $list]
-
-  for {} { $index <  $length } { incr index } {
+  for { set length [llength $list] } { $index <  $length } { incr index } {
 
     if { [lindex $list $index] == $value } {
 
@@ -935,9 +931,9 @@ proc _::sortBy { list iterator { reverse false } } {
 # @param [block] iterator: The block to execute
 # @return [void]
 proc _::times { n iterator } {
-  for { set i 0 } { $i < $n } { incr i } {
+  for { set index 0 } { $index < $n } { incr index } {
 
-    _::yield $iterator $i
+    _::yield $iterator $index
   }
 }
 
@@ -1536,12 +1532,12 @@ proc _::unzip { list } {
 
   set output [list]
 
-  for { set i 0 } { $i < $length } { incr i } {
+  for { set index 0 } { $index < $length } { incr index } {
 
     set mapping [_::map $list {
       { sublist } {
-        upvar i i
-        lindex $sublist $i
+        upvar index index
+        lindex $sublist $index
       }
     }]
 
@@ -1570,10 +1566,10 @@ proc _::unzip { list } {
 proc _::pluck { collection key } {
   set result [list]
 
-  foreach d $collection {
-    if { [dict exists $d $key] } {
+  foreach dictionary $collection {
+    if { [dict exists $dictionary $key] } {
 
-      _::push result [dict get $d $key]
+      _::push result [dict get $dictionary $key]
     }
   }
 
@@ -1597,8 +1593,8 @@ proc _::pluck { collection key } {
 # @param [args] args: The arguments to remove from list
 # @return [list] - the found and removed items
 proc _::pull { list args } {
-  upvar 1 $list l
-  _::pullAll l $args
+  upvar 1 $list array
+  _::pullAll array $args
 }
 
 # Removes all provided values from list.
@@ -1618,14 +1614,14 @@ proc _::pull { list args } {
 # @param [list] values: The values to remove from list
 # @return [list] - the found and removed items
 proc _::pullAll { list values } {
-  upvar 1 $list l
+  upvar 1 $list array
 
   set result [list]
 
   foreach item $values {
-    if { [_::include $l $item] } {
-      while { ~[set index [_::indexOf $l $item]] } {
-        _::push result [_::splice l $index 1]
+    if { [_::include $array $item] } {
+      while { ~[set index [_::indexOf $array $item]] } {
+        _::push result [_::splice array $index 1]
       }
     }
   }
@@ -1750,7 +1746,7 @@ proc _::hasDepth { value } {
 proc _::depth { list } {
   set depth 0
 
-  while { [_::hasDepth [set list [expr { !$depth ? $list : [baseFlatten $list false] } ]]] } {
+  while { [_::hasDepth [set list [expr { !$depth ? $list : [baseFlatten $list false] } ] ] ] } {
 
     incr depth
   }

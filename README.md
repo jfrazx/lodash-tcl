@@ -701,6 +701,7 @@ Executes body if the condition tests false.
 _::unless { 5 < 3 } {
   puts "5 is not less than 3"
 }
+=> 5 is not less than 3
 ```
 
 #### detect
