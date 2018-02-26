@@ -991,6 +991,27 @@ _::contains "test tac test" "cat"
 => false
 ```
 
+#### not 
+`_::not value`
+
+Easily coerce any value into its boolean opposite.
+This can take the place of the '!' operator    
+and allows for a more natural language feel to your code.
+
+```tcl 
+_::not [_::empty "some string"]
+=> true
+
+_::not [_::contains "the string to search" "match"]
+=> true
+
+_::not [_::inRange 7 0 10]
+=> false
+
+_::not [list]
+=> true
+```
+
 ### Origins
 
 Fork of [underscore-tcl](https://github.com/arthurschreiber/underscore-tcl)  

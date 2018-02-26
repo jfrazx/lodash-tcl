@@ -9,7 +9,7 @@
 # This package provides a collection of different utility methods that try to
 # bring functional programming aspects known from other programming languages,
 # like Ruby or JavaScript, to Tcl.
-package provide lodash 0.9
+package provide lodash 0.10
 
 namespace eval ::_ {
 
@@ -1813,8 +1813,35 @@ proc _::endsWith { string chars } {
 #   => false
 #
 # @param [string] string: The string to search
-# @param [string] string: The characters for matching
+# @param [string] chars: The characters for matching
 # @return [boolean]
 proc _::contains { string chars } {
   expr { [string match *${chars}* $string] ? true : false }
+}
+
+# Easily coerce any value into its boolean opposite
+# This can take the place of '!' operator and allows
+# for a more natural language feel to your code
+#
+# @example
+#   _::not [_::empty "some string"]
+#   => true
+#
+#   _::not [_::contains "the string to search" "match"]
+#   => true
+#
+#   _::not [_::inRange 7 0 10]
+#   => false
+#
+#   _::not [list]
+#   => true
+#
+# @param [any] value: the value to coerce into boolean opposite
+# @return [boolean]
+proc _::not { value } {
+  if {[catch {set result [expr { !$value ? true : false }]} ] } {
+    set result [expr {[llength $value] ? false : true}]
+  }
+
+  return $result
 }

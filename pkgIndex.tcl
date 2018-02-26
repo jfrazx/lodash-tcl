@@ -1,1 +1,1 @@
-package ifneeded lodash 0.9 "source $dir/lib/lodash.tcl"
+package ifneeded lodash 0.10 "source $dir/lib/lodash.tcl"
